@@ -1,0 +1,11 @@
+.cell {
+    width: 80px;
+    height: 80px;
+    text-align: center;
+    font-size: 1.5em;
+    position: relative;
+  }
+
+  .bomb-img {
+      height: 100%;
+  }
