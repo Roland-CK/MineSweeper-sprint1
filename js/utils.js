@@ -7,9 +7,9 @@ function boardCreate(column, row) {
 
     gBoard = []
     for (var i = 0; i < column; i++) {
-        gBoard[i] = [] // makes new array
+        gBoard[i] = []
         for (var j = 0; j < row; j++) {
-            gBoard[i][j] = createCell(i, j) // makes new cell in that array
+            gBoard[i][j] = createCell(i, j)
         }
     }
 
@@ -32,10 +32,10 @@ function createCell(i, j) {
     return cell
 }
 
-function createAndRandomPositinMines(minesNumber, idex, jdex) {
+function createAndRandomPositinMines(minesNumber) {
 
     for (var i = 1; i <= minesNumber; i++) {
-        var randCell = getRandCell(idex, jdex)
+        var randCell = getRandCell()
         createMine(randCell.i, randCell.j)
     }
 }
@@ -45,7 +45,6 @@ function createMine(i, j) {
 
     var cell = gBoard[i][j]
     cell.isMine = true
-    // cell.isShown = true
     cell.currCellContent = MINE
 
 }
@@ -61,7 +60,6 @@ function renderBoard(gBoard, selector) {
             var cell = gBoard[i][j].currCellContent;
             var className = 'cell cell' + i + '-' + j;
             strHTML += `<td oncontextmenu="rightClick(this,${i},${j}); return false;" onclick="cellClicked(this,${i},${j})" class="${className}"> ${cell} </td>`
-            // strHTML += '<td onclick="cellClicked(this)" class="' + className + '"> ' + cell + ' </td>'
         }
         strHTML += '</tr>'
     }
@@ -88,20 +86,7 @@ function renderCells(board) {
     }
 }
 
-function renderCellsWithNegsNums(board) {
 
-    for (var i = 0; i < board.length; i++) {
-        for (var j = 0; j < board.length; j++) {
-            if (board[i][j].isShown) continue
-            else {
-                var elCell = document.querySelector(`.cell${board[i][j].location.i}-${board[i][j].location.j}`);
-                elCell.innerHTML = NOTHING
-            }
-
-        }
-    }
-
-}
 //------------------- negs counters ----------------------------------- //
 
 function setMinesNegsCount(board) {
@@ -157,16 +142,17 @@ function cellClicked(elCell, i, j) {
     // debugger
     countClicksAndRestartTimer()
 
-
     if (gFirstClickIndicator !== true) {
+
         gFirstClickIndicator = true
-
+        gClickedCellIdx = {
+            i: i,
+            j: j
+        }
+        startPlay(gMinesNumberChoice)
         gBoard[i][j].isShown = true
-
         elCell = document.querySelector(`.cell${gBoard[i][j].location.i}-${gBoard[i][j].location.j}`);
         elCell.innerHTML = gBoard[i][j].minesAroundCount
-
-        startPlay(gMinesNumberChoice, i, j)
         return
 
     }
@@ -183,10 +169,10 @@ function cellClicked(elCell, i, j) {
         if (gGame.livesCounter <= 0) {
             gameOver(i, j)
             gBoard[i][j].isShown = true
-        modalTxt = 'G A M E  O V E R'
-        openModal() 
-        return
-        } 
+            modalTxt = 'G A M E  O V E R'
+            openModal()
+            return
+        }
 
         modalTxt = 'Ooooops! you blowned a BOMB!)'
         openModal()
@@ -256,7 +242,6 @@ function checkVictory() {
 }
 
 
-
 function gameOver(i, j) {
     gBoard[i][j].isShown = true
     gGame.isOn = false
@@ -289,13 +274,15 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
 }
 
-function getRandCell(iIndx, jIndx) {
+function getRandCell() {
     var cells = [];
 
     for (var i = 0; i < gBoard.length; i++) {
         for (var j = 0; j < gBoard[i].length; j++) {
             var cell = { i: i, j: j };
-            if (cell.i === iIndx && cell.j === jIndx)
+            if (gBoard[i][j].isMine)
+                continue
+            if (cell.i === gClickedCellIdx.i && cell.j === gClickedCellIdx.j)
                 continue
             else
                 cells.push(cell);

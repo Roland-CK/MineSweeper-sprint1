@@ -23,12 +23,14 @@ var gStartOnClickCounter;
 var gTotalSeconds = 0;
 var gFirstClickIndicator;
 var gMinesNumberChoice = 2
+var gClickedCellIdx = {i: 0, j: 0}
 
 
 
 function init(column, row, minesNumber) {
 
     // restart attributes
+    gClickedCellIdx = {i: 0, j: 0}
     closeModal()
     gGame.isOn = false
     stopTimer(gStartOnClickCounter)
@@ -47,16 +49,13 @@ function init(column, row, minesNumber) {
     boardCreate(column, row)
     console.table(boardCreate(column, row))
     renderBoard(gBoard, '.board-container')
-
 }
 
 
-function startPlay(minesNumb, idx, jdx) {
+function startPlay(minesNumb) {
 
-    createAndRandomPositinMines(minesNumb, idx, jdx)
+    createAndRandomPositinMines(minesNumb)
     setMinesNegsCount(gBoard)
-    renderCellsWithNegsNums(gBoard)
-
 }
 
 
