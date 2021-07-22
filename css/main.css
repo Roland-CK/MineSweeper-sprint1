@@ -4,8 +4,38 @@
     text-align: center;
     font-size: 1.5em;
     position: relative;
-  }
+}
 
-  .bomb-img {
-      height: 100%;
-  }
+.bomb-img {
+    height: 70%;
+}
+
+.flag-img {
+    height: 70%;
+}
+
+.timer {}
+
+.level-btn {}
+
+.lives-counter {}
+
+.modal {
+    position: absolute;
+    display: none;
+    background-color: brown;
+    width: 200px;
+    height: 200px;
+    margin-left: 200px;
+    text-align: center;
+    text-rendering: auto;
+}
+
+.modal-btn {}
+
+.game-smile {
+
+    width: 100px;
+    height: 100px;
+
+}

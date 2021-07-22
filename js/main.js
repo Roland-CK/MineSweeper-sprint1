@@ -1,27 +1,65 @@
 'use strict'
 
-// debugger
 const MINE = '<img class="bomb-img" src="./img/bomb.png" alt="">'
 const NOTHING = ''
-
+const FLAG = '<img class="flag-img" src="./img/flag.png" alt="">'
+const VICTORY_SMILE = "./img/victorysmile.png"
+const GAME_SMILE = "./img/gamesmile.png"
+const LOSE_SMILE = "./img/gameoversmile.png"
 
 var gBoard;
+
 var gGame = {
     isOn: false,
     shownCellsCount: 0,
     markedCellsCount: 0,
-    secsPassed: 0
+    secsPassed: 0,
+    livesCounter: 1
 }
 
+var gClickCellOption = true;
+var gRightBtnClickCellOption = true;
+var gStartOnClickCounter;
+var gTotalSeconds = 0;
+var gFirstClickIndicator;
+var gMinesNumberChoice = 2
 
-function init() {
 
+
+function init(column, row, minesNumber) {
+
+    // restart attributes
+    closeModal()
+    gGame.isOn = false
+    stopTimer(gStartOnClickCounter)
+    gStartOnClickCounter = false;
+    gTotalSeconds = 0
+    gClickCellOption = true;
+    gRightBtnClickCellOption = true;
+    gFirstClickIndicator = false
+    gMinesNumberChoice = minesNumber
+
+
+    // render a new game
+    document.querySelector('.game-smile').src=GAME_SMILE
+    column === 4 ? gGame.livesCounter = 1 : gGame.livesCounter = 3
     gGame.isOn = true
-    boardCreate(4, 4)
-    console.table(boardCreate(4, 4))
+    boardCreate(column, row)
+    console.table(boardCreate(column, row))
     renderBoard(gBoard, '.board-container')
-    renderCells(gBoard)
-    setMinesNegsCount(gBoard)
 
 }
+
+
+function startPlay(minesNumb, idx, jdx) {
+
+    createAndRandomPositinMines(minesNumb, idx, jdx)
+    setMinesNegsCount(gBoard)
+    renderCellsWithNegsNums(gBoard)
+
+}
+
+
+
+
 

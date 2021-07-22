@@ -7,9 +7,25 @@
 </head>
 
 
-<body onload="init()">
+<body onload="init(4, 4, 2)">
 
     <h1>Mine Sweeper</h1>
+    <h2><img class="game-smile"src="./img/gamesmile.png" alt="" onclick="init(4, 4, 2)"></h2>
+<h3 class="timer"> Just start by click a cell : 00:00:00 </h2>
+<div></div>
+<div class="modal">Ooooops! you blowned a BOMB!
+<!-- <button class="modal-btn">I got it</button> -->
+
+</div>
+    
+
+<div class="lives-counter">Lives remaining : </div> 
+
+    <div>
+        <button class="level-btn" onclick="init(4, 4, 2)" >The easy path.. (easy)</button>
+        <button class="level-btn" onclick="init(8, 8, 12)" >Like the most? (medium)</button>
+        <button class="level-btn" onclick="init(12, 12, 30)">Unregular! (hard)</button>
+    </div>
 
     <div class="board-container"></div>
 
