@@ -40,6 +40,7 @@ function init(column, row, minesNumber) {
     gRightBtnClickCellOption = true;
     gFirstClickIndicator = false
     gMinesNumberChoice = minesNumber
+    resetDomTimer()
 
 
     // render a new game
