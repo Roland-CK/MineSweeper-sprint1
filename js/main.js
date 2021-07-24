@@ -15,7 +15,7 @@ var gGame = {
     isOn: false,
     safeClickCounter: 3,
     livesCounter: 1,
-    isOnHintBtn: false
+    isOnHintMode: false
 }
 
 var gClickCellOption = true;
@@ -25,7 +25,11 @@ var gTotalSeconds = 0;
 var gFirstClickIndicator;
 var gMinesNumberChoice = 2
 var gLeftBtnClickedCellIdx = { i: 0, j: 0 }
-var gElHint;
+var gElHint = [
+    document.querySelector('.hint1'),
+    document.querySelector('.hint2'),
+    document.querySelector('.hint3')
+];
 var gElLeftBtnClickedCell;
 var gPlayingLevel = {
     islevel1: false,
@@ -117,5 +121,3 @@ function startPlay(minesNumb) {
     createAndRandomPositinMines(minesNumb)
     setMinesNegsCount(gBoard)
 }
-
-

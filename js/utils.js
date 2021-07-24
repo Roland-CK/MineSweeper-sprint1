@@ -199,7 +199,7 @@ function cellClicked(elCell, i, j) {
 
     if (cell.isMarked) return;
 
-    if (cell.isMine && cell.isShown === false && gGame.isOnHintBtn === false) {
+    if (cell.isMine && cell.isShown === false && gGame.isOnHintMode === false) {
         --gGame.livesCounter
         console.log('livesCounter', gGame.livesCounter);
         var elLivesCounter = document.querySelector('.lives-counter')
@@ -218,7 +218,7 @@ function cellClicked(elCell, i, j) {
         elCell.innerHTML = cell.currCellContent
     }
 
-    if (gGame.isOnHintBtn && cell.isShown === false) {
+    if (gGame.isOnHintMode && cell.isShown === false) {
 
         cell.isMine ? elCell.innerHTML = MINE : elCell.innerHTML = cell.minesAroundCount // dom
         negsToShowHintClick(i, j, gBoard)
@@ -445,19 +445,31 @@ function closeModal() {
 
 // ------- bonus: hint button ---------------------------------------- //
 
+var gElCurrHint;
+
 function hintClicked(elHint) {
 
-    gElHint = elHint
-
-    if (gGame.isOnHintBtn) {
-        gGame.isOnHintBtn = false
-        elHint.src = HINT_NOT_CLICKED
+    if (gFirstClickIndicator !== true)
         return
-    }
+        
     else {
-        gGame.isOnHintBtn = true
-        elHint.src = HINT_CLICKED
-        return
+
+        if (gGame.isOnHintMode) {
+            if (gElCurrHint === elHint) {
+                gGame.isOnHintMode = false
+                elHint.src = HINT_NOT_CLICKED
+                gElCurrHint = elHint
+                return
+            }
+            else return
+        }
+
+        else {
+            gGame.isOnHintMode = true
+            elHint.src = HINT_CLICKED
+            gElCurrHint = elHint
+            return
+        }
     }
 
 }
@@ -466,20 +478,21 @@ function hintDissapear() {
 
     gElLeftBtnClickedCell.innerHTML = NOTHING
     negsToDis(gLeftBtnClickedCellIdx.i, gLeftBtnClickedCellIdx.j, gBoard)
-    gElHint.style.display = 'none'
-    gGame.isOnHintBtn = false
+    gElCurrHint.style.display = 'none'
+    gGame.isOnHintMode = false
 }
 
 function hintReset() {
-    var elHint1 = document.querySelector('.hint1')
-    var elHint2 = document.querySelector('.hint2')
-    var elHint3 = document.querySelector('.hint3')
 
-    elHint1.style.display = ''
-    elHint2.style.display = ''
-    elHint3.style.display = ''
+    gElHint[0].src = HINT_NOT_CLICKED
+    gElHint[1].src = HINT_NOT_CLICKED
+    gElHint[2].src = HINT_NOT_CLICKED
 
-    gGame.isOnHintBtn = false
+    gElHint[0].style.display = ''
+    gElHint[1].style.display = ''
+    gElHint[2].style.display = ''
+
+    gGame.isOnHintMode = false
 }
 
 // -------- bonus: best score ---------------------------------------- //
@@ -557,10 +570,10 @@ function shwoBestScore() {
 function onSafeClickBtn() {
 
     if (gGame.safeClickCounter === 0)
-    return
+        return
     else
 
-    --gGame.safeClickCounter
+        --gGame.safeClickCounter
     var getRandCell = getRandCellforSafeClick()
     var elCell = document.querySelector(`.cell${getRandCell.i}-${getRandCell.j}`);
 
