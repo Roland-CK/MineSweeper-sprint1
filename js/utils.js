@@ -68,6 +68,7 @@ function renderBoard(gBoard, selector) {
     elContainer.innerHTML = strHTML;
 
     document.querySelector('.lives-counter').innerHTML = `<div class="lives-counter">Lives remaining : ${gGame.livesCounter}</div>`
+    document.querySelector('.safe-btn-intxt').innerHTML = `${gGame.safeClickCounter} clicks available`
 }
 
 function renderCells(board) {
@@ -122,13 +123,46 @@ function negsToShow(cellI, cellJ, board) {
         for (var j = cellJ - 1; j <= cellJ + 1; j++) {
             if (i === cellI && j === cellJ) continue;
             if (j < 0 || j >= board[i].length) continue;
-            var currCell = board[i][j]
+            if (gBoard[i][j].isMarked) continue;
             board[i][j].isShown = true // model update
-            elCell = document.querySelector(`.cell${board[i][j].location.i}-${board[i][j].location.j}`);
+            var elCell = document.querySelector(`.cell${board[i][j].location.i}-${board[i][j].location.j}`);
             elCell.innerHTML = board[i][j].minesAroundCount
         }
     }
+    return;
+}
 
+
+function negsToShowHintClick(cellI, cellJ, board) {
+
+    for (var i = cellI - 1; i <= cellI + 1; i++) {
+        if (i < 0 || i >= board.length) continue;
+        for (var j = cellJ - 1; j <= cellJ + 1; j++) {
+            if (i === cellI && j === cellJ) continue;
+            if (j < 0 || j >= board[i].length) continue;
+            if (board[i][j].isShown) continue;
+            else
+                // board[i][j].isShown = true // model update
+                var elCell = document.querySelector(`.cell${board[i][j].location.i}-${board[i][j].location.j}`);
+            board[i][j].isMine ? elCell.innerHTML = MINE : elCell.innerHTML = board[i][j].minesAroundCount
+        }
+    }
+    return;
+}
+
+function negsToDis(cellI, cellJ, board) {
+
+    for (var i = cellI - 1; i <= cellI + 1; i++) {
+        if (i < 0 || i >= board.length) continue;
+        for (var j = cellJ - 1; j <= cellJ + 1; j++) {
+            if (i === cellI && j === cellJ) continue;
+            if (j < 0 || j >= board[i].length) continue;
+            if (board[i][j].isShown) continue;
+            // board[i][j].isShown = false // model update
+            var elCell = document.querySelector(`.cell${board[i][j].location.i}-${board[i][j].location.j}`);
+            elCell.innerHTML = NOTHING
+        }
+    }
     return;
 }
 
@@ -136,9 +170,14 @@ function negsToShow(cellI, cellJ, board) {
 // ----------------  mouse click  -------------------------------//
 
 
+
 function cellClicked(elCell, i, j) {
 
+    gElLeftBtnClickedCell = elCell
+    gLeftBtnClickedCellIdx.i = i
+    gLeftBtnClickedCellIdx.j = j
 
+    var cell = gBoard[i][j]
     if (gClickCellOption !== true)
         return;
 
@@ -147,46 +186,52 @@ function cellClicked(elCell, i, j) {
     if (gFirstClickIndicator !== true) {
 
         gFirstClickIndicator = true
-        gClickedCellIdx = {
-            i: i,
-            j: j
-        }
+
         startPlay(gMinesNumberChoice)
-        gBoard[i][j].isShown = true
-        if (gBoard[i][j].minesAroundCount === 0) {
+        cell.isShown = true
+        if (cell.minesAroundCount === 0) {
             negsToShow(i, j, gBoard)
         }
-        elCell = document.querySelector(`.cell${gBoard[i][j].location.i}-${gBoard[i][j].location.j}`);
-        elCell.innerHTML = gBoard[i][j].minesAroundCount
+        elCell = document.querySelector(`.cell${cell.location.i}-${cell.location.j}`);
+        elCell.innerHTML = cell.minesAroundCount
         return
     }
 
-    if (gBoard[i][j].isMarked) return;
+    if (cell.isMarked) return;
 
-    if (gBoard[i][j].isMine && gBoard[i][j].isShown === false) {
+    if (cell.isMine && cell.isShown === false && gGame.isOnHintBtn === false) {
         --gGame.livesCounter
         console.log('livesCounter', gGame.livesCounter);
-        
-        if (gGame.livesCounter <= 0) {
-            gameOver(i, j)
-            gBoard[i][j].isShown = true
-            return
-        }
         var elLivesCounter = document.querySelector('.lives-counter')
         elLivesCounter.innerHTML = `<div class="lives-counter">Lives remaining : ${gGame.livesCounter}</div>`
+        if (gGame.livesCounter <= 0) {
+            gameOver(i, j)
+            cell.isShown = true
+            return
+        }
+
         var modalTxt = document.querySelector('.modal')
         modalTxt.innerText = `Ooooops! you blowned a BOMB! and you got just ${gGame.livesCounter} tries`
         openModal()
 
-        elCell = document.querySelector(`.cell${gBoard[i][j].location.i}-${gBoard[i][j].location.j}`);
-        elCell.innerHTML = gBoard[i][j].currCellContent
+        elCell = document.querySelector(`.cell${cell.location.i}-${cell.location.j}`);
+        elCell.innerHTML = cell.currCellContent
+    }
+
+    if (gGame.isOnHintBtn && cell.isShown === false) {
+
+        cell.isMine ? elCell.innerHTML = MINE : elCell.innerHTML = cell.minesAroundCount // dom
+        negsToShowHintClick(i, j, gBoard)
+        setTimeout(hintDissapear, 1000)
+
+        return
     }
 
     else {
-        gBoard[i][j].isShown = true // model update
-        elCell = document.querySelector(`.cell${gBoard[i][j].location.i}-${gBoard[i][j].location.j}`);
-        elCell.innerHTML = gBoard[i][j].minesAroundCount
-        if (gBoard[i][j].minesAroundCount === 0) {
+        cell.isShown = true // model update
+        elCell = document.querySelector(`.cell${cell.location.i}-${cell.location.j}`);
+        elCell.innerHTML = cell.minesAroundCount
+        if (cell.minesAroundCount === 0) {
             negsToShow(i, j, gBoard)
         }
 
@@ -216,8 +261,9 @@ function rightClick(elCell, i, j) {
 
 // ----------------  end game  -----------------------------------//
 
-function checkVictory() {
 
+
+function checkVictory() {
 
     for (var idx = 0; idx < gBoard.length; idx++) {
         for (var jdx = 0; jdx < gBoard.length; jdx++) {
@@ -233,8 +279,19 @@ function checkVictory() {
     }
 
     console.log('Victory!');
+    // debugger
+    if (gPlayingLevel.islevel1)
+        gIsVictory.level1 = true
+    else if (gPlayingLevel.islevel2)
+        gIsVictory.level2 = true
+    else if (gPlayingLevel.islevel3)
+        gIsVictory.level3 = true
+
+    console.log('playing level : ', gPlayingLevel, 'is victory? ', gIsVictory);
+
     gGame.isOn = false
     stopTimer(gStartOnClickCounter)
+    shwoBestScore()
     gClickCellOption = false
     gRightBtnClickCellOption = false
     document.querySelector('.game-smile').src = VICTORY_SMILE
@@ -242,6 +299,8 @@ function checkVictory() {
     elModal.innerText = 'Victory!'
     elModal.style.backgroundColor = "green"
     openModal()
+
+
 
 }
 
@@ -289,7 +348,27 @@ function getRandCell() {
             var cell = { i: i, j: j };
             if (gBoard[i][j].isMine)
                 continue
-            if (cell.i === gClickedCellIdx.i && cell.j === gClickedCellIdx.j)
+            if (cell.i === gLeftBtnClickedCellIdx.i && cell.j === gLeftBtnClickedCellIdx.j)
+                continue
+            else
+                cells.push(cell);
+        }
+    }
+
+    var randomCell = cells[getRandomInt(0, cells.length)];
+    if (!randomCell) return null;
+
+    return randomCell;
+}
+
+
+function getRandCellforSafeClick() {
+    var cells = [];
+
+    for (var i = 0; i < gBoard.length; i++) {
+        for (var j = 0; j < gBoard[i].length; j++) {
+            var cell = { i: i, j: j };
+            if (gBoard[i][j].isMine || gBoard[i][j].isShown || gBoard[i][j].isMarked)
                 continue
             else
                 cells.push(cell);
@@ -305,6 +384,7 @@ function getRandCell() {
 //---------------------------  timer  --------------------------------//
 
 function countTimer() {
+
     ++gTotalSeconds;
     var hour = Math.floor(gTotalSeconds / 3600);
     var minute = Math.floor((gTotalSeconds - hour * 3600) / 60);
@@ -315,7 +395,21 @@ function countTimer() {
         minute = "0" + minute;
     if (seconds < 10)
         seconds = "0" + seconds;
-    document.querySelector('.timer').innerHTML = "Just start by click on a cell : " + hour + ":" + minute + ":" + seconds;
+    var inHtmlTxt = "Just start by click on a cell : "
+    document.querySelector('.timer').innerHTML = inHtmlTxt + hour + ":" + minute + ":" + seconds;
+
+    if (gPlayingLevel.islevel1) {
+        localStorage.scoreLvl1 = hour + ":" + minute + ":" + seconds // store 
+    }
+    if (gPlayingLevel.islevel2) {
+        localStorage.scoreLvl2 = hour + ":" + minute + ":" + seconds // store
+    }
+    if (gPlayingLevel.islevel3) {
+        localStorage.scoreLvl3 = hour + ":" + minute + ":" + seconds // store
+
+    }
+
+
 }
 
 function countClicksAndRestartTimer() {
@@ -347,3 +441,132 @@ function closeModal() {
     elModal.style.display = 'none';
 }
 
+
+
+// ------- bonus: hint button ---------------------------------------- //
+
+function hintClicked(elHint) {
+
+    gElHint = elHint
+
+    if (gGame.isOnHintBtn) {
+        gGame.isOnHintBtn = false
+        elHint.src = HINT_NOT_CLICKED
+        return
+    }
+    else {
+        gGame.isOnHintBtn = true
+        elHint.src = HINT_CLICKED
+        return
+    }
+
+}
+
+function hintDissapear() {
+
+    gElLeftBtnClickedCell.innerHTML = NOTHING
+    negsToDis(gLeftBtnClickedCellIdx.i, gLeftBtnClickedCellIdx.j, gBoard)
+    gElHint.style.display = 'none'
+    gGame.isOnHintBtn = false
+}
+
+function hintReset() {
+    var elHint1 = document.querySelector('.hint1')
+    var elHint2 = document.querySelector('.hint2')
+    var elHint3 = document.querySelector('.hint3')
+
+    elHint1.style.display = ''
+    elHint2.style.display = ''
+    elHint3.style.display = ''
+
+    gGame.isOnHintBtn = false
+}
+
+// -------- bonus: best score ---------------------------------------- //
+
+localStorage.bestScoreLvl1 = '61:61:61'
+localStorage.bestScoreLvl2 = '61:61:61'
+localStorage.bestScoreLvl3 = '61:61:61'
+
+
+
+function shwoBestScore() {
+    // debugger
+    if (gIsVictory.level1) {
+
+        var currScore = localStorage.scoreLvl1.split(':')
+        var currBestScore = localStorage.bestScoreLvl1.split(':')
+        for (var i = 0; i < currScore.length; i++) {
+            currScore[i] = +currScore[i]
+            currBestScore[i] = +currBestScore[i]
+        }
+
+        for (var i = 0; i < currScore.length; i++) {
+            if (currScore[i] < currBestScore[i]) {
+                localStorage.bestScoreLvl1 = localStorage.scoreLvl1
+                document.querySelector('.best-score').innerHTML = "Best time record (level 1) : " + localStorage.bestScoreLvl1
+                return
+            }
+            else continue
+        }
+    }
+
+    if (gIsVictory.level2) {
+
+        var currScore = localStorage.scoreLvl2.split(':')
+        var currBestScore = localStorage.bestScoreLvl2.split(':')
+        for (var i = 0; i < currScore.length; i++) {
+            currScore[i] = +currScore[i]
+            currBestScore[i] = +currBestScore[i]
+        }
+
+        for (var i = 0; i < currScore.length; i++) {
+            if (currScore[i] < currBestScore[i]) {
+                localStorage.bestScoreLvl2 = localStorage.scoreLvl2
+                document.querySelector('.best-score').innerHTML = "Best time record (level 2) : " + localStorage.bestScoreLvl2
+                return
+            }
+            else continue
+        }
+    }
+
+    if (gIsVictory.level3) {
+
+        var currScore = localStorage.scoreLvl3.split(':')
+        var currBestScore = localStorage.bestScoreLvl3.split(':')
+        for (var i = 0; i < currScore.length; i++) {
+            currScore[i] = +currScore[i]
+            currBestScore[i] = +currBestScore[i]
+        }
+
+        for (var i = 0; i < currScore.length; i++) {
+            if (currScore[i] < currBestScore[i]) {
+                localStorage.bestScoreLvl3 = localStorage.scoreLvl3
+                document.querySelector('.best-score').innerHTML = "Best time record (level 3) : " + localStorage.bestScoreLvl3
+                return
+            }
+
+        }
+    }
+
+}
+
+
+// --------- bonus: safe click button ----------------------------------- //
+
+function onSafeClickBtn() {
+
+    if (gGame.safeClickCounter === 0)
+    return
+    else
+
+    --gGame.safeClickCounter
+    var getRandCell = getRandCellforSafeClick()
+    var elCell = document.querySelector(`.cell${getRandCell.i}-${getRandCell.j}`);
+
+    document.querySelector('.safe-btn-intxt').innerHTML = `${gGame.safeClickCounter} clicks available`
+    elCell.style.backgroundColor = 'blue'
+
+    setTimeout(function () { elCell.style.backgroundColor = 'white' }, 2000)
+
+}
