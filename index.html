@@ -7,34 +7,40 @@
 </head>
 
 
-<body onload="initOnLoad(4, 4, 2)">
+<body class="body-style" onload="initOnLoad(4, 4, 2)">
 
-    <h1>Mine Sweeper</h1>
-    <h2><img class="game-smile"src="./img/gamesmile.png" alt="" onclick="init(4, 4, 2)"></h2>
-<h3 class="timer"> Just start by click on a cell : 00:00:00 </h3>
-<h4 class="best-score">best score </h4>
-<div></div>
-<div class="modal">Ooooops! you blowned a BOMB!
-<!-- <button class="modal-btn">I got it</button> -->
+<div class="navbar"></div>
 
-</div>
-    
+    <h1 class="header1">Mine Sweeper</h1>
 
-<div class="lives-counter">Lives remaining :  </div> 
+    <h2><img class="game-smile" src="./img/gamesmile.png" alt="" onclick="init(4, 4, 2)"> </h2>
+
+    <div class="lvl-btn-div">        <button class="level-btn" onclick="initLevel1(4, 4, 2)">The easy path.. (easy)</button>
+        <button class="level-btn" onclick="initLevel2(8, 8, 12)">Like the most? (medium)</button>
+        <button class="level-btn" onclick="initLevel3(12, 12, 30)">Unregular! (hard)</button></div>
+        <div class="timer"> Just start the clock by clicking on a cell : 00:00:00 </div>
+        <div class="best-score">best score </div>
+        <div class="lives-counter">Lives remaining : </div>
+    <div></div>
+    <div class="hint-div">
+        <img src="./img/hint.png" alt="" class="hint hint1" onclick="hintClicked(this)">
+       <img src="./img/hint.png" alt="" class="hint hint2" onclick="hintClicked(this)">
+       <img src="./img/hint.png" alt="" class="hint hint3" onclick="hintClicked(this)">
+   </div>
 
 
-    <div>
-        <button class="level-btn" onclick="initLevel1(4, 4, 2)" >The easy path.. (easy)</button>
-        <button class="level-btn" onclick="initLevel2(8, 8, 12)" >Like the most? (medium)</button>
-        <button class="level-btn" onclick="initLevel3(12, 12, 30)">Unregular! (hard)</button>
-   <img src="./img/hint.png" alt="" class="hint hint1" onclick="hintClicked(this)">
-    <img src="./img/hint.png" alt="" class="hint hint2" onclick="hintClicked(this)">
-    <img src="./img/hint.png" alt="" class="hint hint3" onclick="hintClicked(this)">
-    <button class="safe-btn" onclick="onSafeClickBtn()">Safe click</button> 
-    <span class="safe-btn-intxt"></span>
+    <div class="safe-btn-div">
+
+        <button class="safe-btn" onclick="onSafeClickBtn(this)">Safe click</button>
+        <span class="safe-btn-intxt"></span>
     </div>
 
     <div class="board-container"></div>
+
+    <div class="modal modal-content">Ooooops! you blowned a BOMB!
+        <!-- <button class="modal-btn">I got it</button> -->
+
+    </div>
 
     <script src="./js/utils.js"></script>
     <script src="./js/main.js"></script>

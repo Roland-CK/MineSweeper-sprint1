@@ -53,7 +53,7 @@ function createMine(i, j) {
 // ------------------ the dom render ----------------------------- //
 
 function renderBoard(gBoard, selector) {
-    var strHTML = '<table border="1"><tbody>';
+    var strHTML = '<table class="table-style" border="1"><tbody>';
     for (var i = 0; i < gBoard.length; i++) {
         strHTML += '<tr>';
         for (var j = 0; j < gBoard[0].length; j++) {
@@ -124,13 +124,19 @@ function negsToShow(cellI, cellJ, board) {
             if (i === cellI && j === cellJ) continue;
             if (j < 0 || j >= board[i].length) continue;
             if (gBoard[i][j].isMarked) continue;
+            if (gBoard[i][j].isMine) continue;
             board[i][j].isShown = true // model update
             var elCell = document.querySelector(`.cell${board[i][j].location.i}-${board[i][j].location.j}`);
             elCell.innerHTML = board[i][j].minesAroundCount
+
+            // if (gBoard[i][j].minesAroundCount === 0) {
+            //     negsToShow(i,j, gBoard)
+
         }
     }
-    return;
+    return
 }
+
 
 
 function negsToShowHintClick(cellI, cellJ, board) {
@@ -181,25 +187,23 @@ function cellClicked(elCell, i, j) {
     if (gClickCellOption !== true)
         return;
 
-    countClicksAndRestartTimer()
 
     if (gFirstClickIndicator !== true) {
-
         gFirstClickIndicator = true
-
+        countClicksAndRestartTimer()
         startPlay(gMinesNumberChoice)
-        cell.isShown = true
+
         if (cell.minesAroundCount === 0) {
             negsToShow(i, j, gBoard)
         }
-        elCell = document.querySelector(`.cell${cell.location.i}-${cell.location.j}`);
+        cell.isShown = true
         elCell.innerHTML = cell.minesAroundCount
         return
     }
 
     if (cell.isMarked) return;
 
-    if (cell.isMine && cell.isShown === false && gGame.isOnHintMode === false) {
+    if (cell.isMine === true && cell.isShown === false && gGame.isOnHintMode === false) {
         --gGame.livesCounter
         console.log('livesCounter', gGame.livesCounter);
         var elLivesCounter = document.querySelector('.lives-counter')
@@ -207,15 +211,14 @@ function cellClicked(elCell, i, j) {
         if (gGame.livesCounter <= 0) {
             gameOver(i, j)
             cell.isShown = true
-            return
+
         }
 
+        elCell.innerHTML = MINE
         var modalTxt = document.querySelector('.modal')
         modalTxt.innerText = `Ooooops! you blowned a BOMB! and you got just ${gGame.livesCounter} tries`
         openModal()
-
-        elCell = document.querySelector(`.cell${cell.location.i}-${cell.location.j}`);
-        elCell.innerHTML = cell.currCellContent
+        return
     }
 
     if (gGame.isOnHintMode && cell.isShown === false) {
@@ -229,13 +232,19 @@ function cellClicked(elCell, i, j) {
 
     else {
         cell.isShown = true // model update
-        elCell = document.querySelector(`.cell${cell.location.i}-${cell.location.j}`);
-        elCell.innerHTML = cell.minesAroundCount
+        if (cell.isMine) {
+            elCell.innerHTML = MINE
+            return
+        }
         if (cell.minesAroundCount === 0) {
             negsToShow(i, j, gBoard)
+            elCell.innerHTML = cell.minesAroundCount
+            return
         }
 
+        elCell.innerHTML = cell.minesAroundCount
         checkVictory()
+        return
     }
 }
 
@@ -279,7 +288,6 @@ function checkVictory() {
     }
 
     console.log('Victory!');
-    // debugger
     if (gPlayingLevel.islevel1)
         gIsVictory.level1 = true
     else if (gPlayingLevel.islevel2)
@@ -322,13 +330,14 @@ function gameOver(i, j) {
                 gClickCellOption = false
                 gRightBtnClickCellOption = false
                 document.querySelector('.game-smile').src = LOSE_SMILE
-                var elModal = document.querySelector('.modal')
-                elModal.innerText = 'G A M E   O V E R'
-                openModal()
+
             }
         }
 
     }
+    var elModal = document.querySelector('.modal')
+    elModal.innerText = 'G A M E   O V E R'
+    openModal()
 }
 
 
@@ -395,7 +404,7 @@ function countTimer() {
         minute = "0" + minute;
     if (seconds < 10)
         seconds = "0" + seconds;
-    var inHtmlTxt = "Just start by click on a cell : "
+    var inHtmlTxt = "Just start the clock by clicking on a cell : "
     document.querySelector('.timer').innerHTML = inHtmlTxt + hour + ":" + minute + ":" + seconds;
 
     if (gPlayingLevel.islevel1) {
@@ -426,7 +435,7 @@ function stopTimer(interval) {
 function resetDomTimer() {
 
     var elTimer = document.querySelector('.timer')
-    elTimer.innerText = `Just start by click on a cell : 00:00:00`
+    elTimer.innerText = `Just start the clock by clicking on a cell : 00:00:00`
 }
 
 // --------------------- modal ------------------------//
@@ -445,13 +454,12 @@ function closeModal() {
 
 // ------- bonus: hint button ---------------------------------------- //
 
-var gElCurrHint;
 
 function hintClicked(elHint) {
 
     if (gFirstClickIndicator !== true)
         return
-        
+
     else {
 
         if (gGame.isOnHintMode) {
@@ -567,19 +575,24 @@ function shwoBestScore() {
 
 // --------- bonus: safe click button ----------------------------------- //
 
-function onSafeClickBtn() {
+function onSafeClickBtn(elBtn) {
 
-    if (gGame.safeClickCounter === 0)
+    if (gGame.safeClickCounter === 0) {
+        elBtn.style.cursor = "not-allowed"
         return
+    }
+   
     else
-
         --gGame.safeClickCounter
+        if (gGame.safeClickCounter === 0) {
+            elBtn.style.cursor = "not-allowed"
+            }
     var getRandCell = getRandCellforSafeClick()
     var elCell = document.querySelector(`.cell${getRandCell.i}-${getRandCell.j}`);
 
     document.querySelector('.safe-btn-intxt').innerHTML = `${gGame.safeClickCounter} clicks available`
     elCell.style.backgroundColor = 'blue'
-
+   
     setTimeout(function () { elCell.style.backgroundColor = 'white' }, 2000)
 
 }

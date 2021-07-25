@@ -41,6 +41,7 @@ var gIsVictory = {
     level2: false,
     level3: false
 }
+var gElCurrHint;
 
 
 
