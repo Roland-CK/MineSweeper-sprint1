@@ -101,6 +101,12 @@ background-repeat: no-repeat; */
 
 }
 
+.footer {
+    margin-top: 3%;
+    text-align: center;
+}
+
+
 .hint {
     max-width: 20%;
     height: auto;
